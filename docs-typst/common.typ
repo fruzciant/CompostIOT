@@ -1,19 +1,22 @@
 #import "@preview/obelisk:0.2.0": *
 
-// Paleta institucional CompostIOT / SENA
-#let sena-green = rgb("#15613B")
-#let sena-soft = rgb("#EDF4F0")
-#let sena-border = rgb("#C6D8CE")
-#let ink-dark = rgb("#12261C")
-#let ink-muted = rgb("#465C50")
-#let phase-blue = rgb("#2563EB")
-#let phase-orange = rgb("#D95F02")
-#let phase-ochre = rgb("#B47B00")
-#let phase-green = rgb("#15803D")
+// Paleta editorial mínima: tinta oscura, grafito y un único acento verde SENA
+#let ink = rgb("#141916")
+#let ink-soft = rgb("#4A5550")
+#let rule-color = rgb("#C8D0CC")
+#let accent = rgb("#15613B")
+#let warn-ink = rgb("#9A3412")
+#let blue-ink = rgb("#1D4ED8")
 
-// Configuración global sobre Obelisk 0.2.0 (Bauhaus + español + sin advertencias de fuentes)
+// Entornos nativos de Obelisk (sin cajas redondeadas ni rellenos pastel)
+#let precaucion = make-environment("Precaución", "PRE", rgb("#991B1B"))
+#let practica = make-environment("Práctica", "LAB", rgb("#1D4ED8"))
+#let concepto = make-environment("Concepto", "DEF", rgb("#15613B"))
+#let nota = make-environment("Nota", "NOTA", rgb("#475569"))
+
+// Configuración base estrictamente fiel a @preview/obelisk:0.2.0
 #let compost-doc(doc) = {
-  set text(lang: "es", fill: ink-dark)
+  set text(lang: "es", fill: ink)
   show: init.with(
     paper: (
       width: 21cm,
@@ -23,7 +26,7 @@
     texts: (
       size: 10.5pt,
       ascender: 8.5pt,
-      step: 14.5pt,
+      step: 15pt,
     ),
     fonts: (
       body: "Libertinus Serif",
@@ -35,151 +38,102 @@
       line-number: false,
     ),
     headers: (
-      h2: (sym: sym.circle.filled, dy: 0pt, size: 1.55),
-      h3: (sym: sym.triangle.filled.small.b, dy: 0pt, size: 1.25),
+      h2: (sym: sym.circle.filled, dy: 0pt, size: 1.5),
+      h3: (sym: sym.triangle.filled.small.b, dy: 0pt, size: 1.18),
     ),
   )
   doc
 }
 
-// Contenedor limpio para tablas, figuras y tarjetas (evita el bug de measure sin ancho de bblock)
-#let card-block(breakable: false, body) = {
-  block(
-    width: 100%,
-    breakable: breakable,
-    above: 12pt,
-    below: 14pt,
-  )[
+// Encabezado tipográfico editorial (cero cajas, solo jerarquía y filete 0.6pt)
+#let doc-meta(code: "", subtitle: "", audience: "") = {
+  block(width: 100%, above: 4pt, below: 18pt)[
     #set text(top-edge: "ascender", bottom-edge: "descender")
-    #set par(leading: 0.62em, spacing: 0.65em, justify: false)
-    #body
+    #set par(leading: 0.6em, spacing: 0.5em, justify: false)
+    #text(font: "Inter", size: 8.8pt, weight: "semibold", fill: accent)[
+      SENA · Maestría en Educación Sostenible y Gestión Ambiental Territorial
+    ]
+    #v(6pt)
+    #text(size: 10.5pt, fill: ink-soft)[#subtitle]
+    #v(7pt)
+    #line(length: 100%, stroke: 0.6pt + rule-color)
+    #v(6pt)
+    #grid(
+      columns: (1fr, auto),
+      column-gutter: 12pt,
+      align: (left + top, right + top),
+      [#text(font: "Inter", size: 8.4pt, fill: ink-soft)[Dirigido a: #text(fill: ink)[#audience]]],
+      [#text(font: "DejaVu Sans Mono", size: 8pt, fill: ink-soft)[#code]],
+    )
   ]
 }
 
-// Ficha técnica de encabezado institucional (justo debajo del título Bauhaus de Obelisk)
-#let cover-meta(code: "DOC-01", subtitle: "", audience: "", version: "v1.0") = {
-  card-block[
-    #box(
-      width: 100%,
-      stroke: (left: 4pt + sena-green, rest: 0.6pt + sena-border),
-      fill: sena-soft,
-      radius: (right: 4pt),
-      inset: (x: 12pt, y: 10pt),
-    )[
-      #set text(font: "Inter")
-      #grid(
-        columns: (1fr, auto),
-        column-gutter: 8pt,
-        align: (left + horizon, right + horizon),
-        [#text(size: 8pt, weight: "bold", fill: sena-green)[SENA · MAESTRÍA EN EDUCACIÓN SOSTENIBLE Y GESTIÓN AMBIENTAL TERRITORIAL]],
-        [#text(size: 8pt, weight: "bold", fill: ink-muted)[#code · #version]],
-      )
-      #v(5pt)
-      #text(size: 10pt, fill: ink-dark)[#subtitle]
-      #v(6pt)
-      #line(length: 100%, stroke: 0.5pt + sena-border)
-      #v(5pt)
-      #text(size: 8.5pt, fill: ink-muted)[*Dirigido a:* #text(fill: ink-dark)[#audience]]
+// Tabla limpia estilo Booktabs (sin rellenos sólidos ni rejillas verticales)
+#let editorial-table(columns: auto, headers: (), rows: ()) = {
+  block(width: 100%, breakable: true, above: 10pt, below: 14pt)[
+    #set text(font: "Inter", size: 8.5pt, top-edge: "ascender", bottom-edge: "descender")
+    #set par(leading: 0.55em, spacing: 0.45em, justify: false)
+    #table(
+      columns: columns,
+      inset: (x: 4pt, y: 6pt),
+      stroke: (x, y) => (
+        top: if y == 0 { 1.1pt + ink } else if y == 1 { 0.6pt + ink } else { 0.3pt + rule-color },
+        bottom: if y == rows.len() { 1.1pt + ink } else { none },
+        left: none,
+        right: none,
+      ),
+      table.header(
+        ..headers.map(h => text(weight: "bold", fill: ink)[#h]),
+      ),
+      ..rows.flatten(),
+    )
+  ]
+}
+
+// Paso de ensamble estilo Bauhaus / LEGO aprovechando el margen lateral nativo de Obelisk
+#let assembly-step(num: 1, title: "", parts: (), tool: "", check: "", body) = {
+  block(width: 100%, breakable: false, above: 18pt, below: 14pt)[
+    #set text(top-edge: "ascender", bottom-edge: "descender")
+    #set par(leading: 0.55em, justify: false)
+    #line(length: 100%, stroke: 0.45pt + rule-color)
+    #v(8pt)
+    #sidenote[
+      #set text(font: "Inter", size: 7.6pt, top-edge: "ascender", bottom-edge: "descender")
+      #set par(leading: 0.46em, spacing: 0.3em, justify: false)
+      #text(weight: "bold", fill: accent)[Paso #num]\
+      #for p in parts {
+        [#p\ ]
+      }
+      #if tool != "" {
+        v(2pt)
+        text(fill: ink-soft)[#tool]
+      }
+    ]
+    #text(font: "Inter", size: 11.5pt, weight: "bold", fill: ink)[
+      #text(fill: accent)[#num.] #title
     ]
   ]
-}
 
-// Bloque de paso visual estilo manual LEGO
-#let lego-step(num: 1, title: "", parts: (), tools: "", check: "", body) = {
-  card-block[
-    #box(
-      width: 100%,
-      stroke: 0.8pt + sena-border,
-      radius: 4pt,
-      fill: white,
-      clip: true,
-    )[
-      // Franja superior del paso
-      #box(
-        width: 100%,
-        fill: sena-soft,
-        inset: (x: 10pt, y: 6pt),
-        stroke: (bottom: 0.6pt + sena-border),
-      )[
-        #set text(font: "Inter")
-        #grid(
-          columns: (auto, 1fr, auto),
-          column-gutter: 8pt,
-          align: (left + horizon, left + horizon, right + horizon),
-          box(
-            fill: sena-green,
-            radius: 3pt,
-            inset: (x: 7pt, y: 3.5pt),
-          )[#text(fill: white, size: 10pt, weight: "extrabold")[PASO #num]],
-          [#text(size: 10pt, weight: "bold", fill: ink-dark)[#title]],
-          if tools != "" [
-            #text(size: 7.5pt, fill: ink-muted)[*Herramienta:* #tools]
-          ] else [],
-        )
-      ]
+  body
 
-      // Cuerpo + inventario de piezas del paso
-      #pad(x: 10pt, y: 8pt)[
-        #if parts.len() > 0 {
-          box(
-            width: 100%,
-            fill: rgb("#F8FAF9"),
-            stroke: 0.5pt + sena-border,
-            radius: 3pt,
-            inset: (x: 8pt, y: 5pt),
-          )[
-            #set text(font: "Inter", size: 8pt)
-            #text(weight: "bold", fill: sena-green)[Piezas: ]
-            #parts.join("  ·  ")
-          ]
-          v(6pt)
-        }
-
-        #set text(size: 9.5pt)
-        #body
-
-        #if check != "" {
-          v(6pt)
-          box(
-            width: 100%,
-            fill: rgb("#F0FDF4"),
-            stroke: (left: 3pt + phase-green, rest: 0.5pt + rgb("#BBF7D0")),
-            inset: (x: 8pt, y: 4.5pt),
-          )[
-            #set text(font: "Inter", size: 8pt, fill: rgb("#14532D"))
-            *Verificación [✓]:* #check
-          ]
-        }
-      ]
+  if check != "" {
+    block(width: 100%, above: 8pt, below: 14pt)[
+      #set text(font: "Inter", size: 8.8pt, fill: accent, top-edge: "ascender", bottom-edge: "descender")
+      #set par(leading: 0.55em, justify: false)
+      *Verificación:* #text(fill: ink)[#check]
     ]
-  ]
-}
-
-// Tarjeta de alerta / consejo / actividad pedagógica
-#let callout(kind: "info", title: "", body) = {
-  let palette = if kind == "warning" {
-    (bg: rgb("#FFFBEB"), border: rgb("#F59E0B"), fg: rgb("#92400E"))
-  } else if kind == "danger" {
-    (bg: rgb("#FEF2F2"), border: rgb("#DC2626"), fg: rgb("#991B1B"))
-  } else if kind == "activity" {
-    (bg: rgb("#EFF6FF"), border: rgb("#2563EB"), fg: rgb("#1E3A8A"))
-  } else {
-    (bg: sena-soft, border: sena-green, fg: ink-dark)
   }
+}
 
-  card-block[
-    #box(
-      width: 100%,
-      fill: palette.bg,
-      stroke: (left: 3.5pt + palette.border, rest: 0.5pt + palette.border.lighten(50%)),
-      radius: (right: 3pt),
-      inset: (x: 10pt, y: 8pt),
-    )[
-      #set text(font: "Inter", size: 9pt, fill: palette.fg)
-      #text(weight: "bold")[#title]
-      #v(4pt)
-      #set text(font: "Libertinus Serif", size: 9.5pt, fill: ink-dark)
-      #body
-    ]
-  ]
+// Figura limpia sin marcos pesados, centrada en el espacio blanco
+#let clean-figure(caption: "", body) = {
+  figure(
+    supplement: [Figura],
+    caption: text(font: "Inter", size: 8.2pt, fill: ink-soft)[#caption],
+    block(width: 100%, breakable: false, above: 8pt, below: 4pt)[
+      #set text(top-edge: "ascender", bottom-edge: "descender")
+      #set par(leading: 0.55em, justify: false)
+      #align(center)[#body]
+    ],
+  )
 }

@@ -2,191 +2,199 @@
 
 #show: compost-doc
 
-= Manual de Ensamble CompostIOT
+= Manual de ensamble
 
-#cover-meta(
-  code: "CIOT-MAN-01",
-  subtitle: "Guía visual paso a paso estilo LEGO para imprimir, armar, sellar e instalar el Nodo Emisor de intemperie y el Nodo Receptor (LILYGO TTGO LoRa32 V2.1).",
-  audience: "Aprendices tecnólogos del área ambiental, instructores SENA y equipo técnico de campo.",
-  version: "v1.0 (Preliminar CAD)",
+#doc-meta(
+  code: "CIOT-MAN-01 · v1.1",
+  subtitle: "Guía paso a paso para imprimir, ensamblar, sellar e instalar el Nodo Emisor de intemperie y el Nodo Receptor basados en LILYGO TTGO LoRa32 V2.1.",
+  audience: "Aprendices tecnólogos del área ambiental, instructores SENA y personal de campo.",
 )
 
-Este manual permite ensamblar desde cero los dos módulos físicos de *CompostIOT* sin experiencia previa en electrónica avanzada. #sidenote[Cada paso indica exactamente qué piezas tomar, qué herramienta usar y cómo verificar el montaje antes de avanzar.]
+Este manual describe el armado completo de los dos módulos físicos de *CompostIOT*. En cada paso, la columna lateral izquierda enumera las piezas exactas y la herramienta requerida, al estilo de los manuales visuales de montaje.
 
-== Inventario visual de piezas (BOM)
+== Inventario de piezas
 
-Antes de comenzar, extiende todas las piezas sobre una mesa limpia y verifica que tu kit esté completo.
+Extiende todos los componentes sobre una mesa limpia antes de empezar y confirma las cantidades del kit.
 
-#card-block(breakable: true)[
-  #set text(font: "Inter", size: 8pt)
-  #table(
-    columns: (auto, 1fr, auto, auto),
-    inset: 5.5pt,
-    stroke: 0.5pt + sena-border,
-    fill: (_, row) => if row == 0 { sena-green } else if calc.odd(row) { rgb("#F8FAF9") } else { white },
-    table.header(
-      text(fill: white, weight: "bold")[Cant.],
-      text(fill: white, weight: "bold")[Pieza / Componente],
-      text(fill: white, weight: "bold")[Material / Tipo],
-      text(fill: white, weight: "bold")[Módulo],
-    ),
-    [2×], [*LILYGO TTGO LoRa32 V2.1* (ESP32, OLED 0.96", SX1278 433 MHz + antena SMA)], [Electrónica], [Ambos],
-    [1×], [`Emisor_Base.stl` — Caja principal con orejas y 4 pasos inferiores], [PETG / ASA], [Emisor],
-    [1×], [`Emisor_Tapa.stl` — Tapa con visera, ventana OLED y grabado SENA], [PETG / ASA], [Emisor],
-    [1×], [`Emisor_Empaque_TPU.stl` — Empaque perimetral sellante], [TPU 95A / Silicona], [Emisor],
-    [1×], [`Emisor_Soporte_18650.stl` — Bandeja modular 5 V / futura 18650], [PETG / ASA], [Emisor],
-    [1×], [`Emisor_Tapon_pH.stl` — Tapón ciego si no se usa sonda de pH], [PETG / ASA], [Emisor],
-    [1×], [`Receptor_Base.stl` + `Receptor_Tapa.stl` — Carcasa de aula], [PLA+ / PETG], [Receptor],
-    [1×], [Lámina transparente acrílico/policarbonato (`33.5 × 21.5 × 2 mm`)], [Acrílico + silicona], [Emisor],
-    [1× / 3×], [Prensaestopas: 1× *PG9* (5 V) + 2 o 3× *PG7* (sondas)], [Nylon IP68], [Emisor],
-    [14×], [Tornillos inox: 4× M3×16, 4× M3×12, 2× M3×8, 4× M2×6 mm], [Acero inox], [Ambos],
-    [1×], [Fuente regulada 5 V DC (toma cercana) + cable encauchetado], [Alimentación], [Emisor],
-    [2 o 3], [Sensores: *Temperatura* (oblig.), *Humedad* (oblig.), *pH* (opcional)], [Sondas campo], [Emisor],
-  )
+#editorial-table(
+  columns: (auto, 1fr, auto, auto),
+  headers: ("Cant.", "Pieza o componente", "Material", "Módulo"),
+  rows: (
+    ([2×], [Placa *LILYGO TTGO LoRa32 V2.1* (ESP32, OLED 0.96", SX1278 433 MHz y antena SMA)], [Electrónica], [Ambos]),
+    ([1×], [`Emisor_Base.stl`: carcasa principal con orejas y 4 pasos inferiores], [PETG / ASA], [Emisor]),
+    ([1×], [`Emisor_Tapa.stl`: tapa frontal con visera, visor OLED y grabado SENA], [PETG / ASA], [Emisor]),
+    ([1×], [`Emisor_Empaque_TPU.stl`: empaque perimetral de sellado], [TPU 95A], [Emisor]),
+    ([1×], [`Emisor_Soporte_18650.stl`: bandeja modular para bornera 5 V o futura 18650], [PETG / ASA], [Emisor]),
+    ([1×], [`Emisor_Tapon_pH.stl`: tapón ciego si la pila no lleva sonda de pH], [PETG / ASA], [Emisor]),
+    ([2×], [`Receptor_Base.stl` y `Receptor_Tapa.stl`: carcasa de escritorio o pared], [PLA+ / PETG], [Receptor]),
+    ([1×], [Lámina transparente de acrílico o policarbonato de `33.5 × 21.5 × 2 mm`], [Acrílico], [Emisor]),
+    ([1× / 3×], [Prensaestopas IP68: 1× *PG9* (cable 5 V) y 2 o 3× *PG7* (sondas)], [Nylon], [Emisor]),
+    ([14×], [Tornillos inoxidables: 4× M3×16, 4× M3×12, 2× M3×8 y 4× M2×6 mm], [Acero inox], [Ambos]),
+    ([1×], [Fuente regulada 5 V DC para toma eléctrica cercana y cable encauchetado], [Energía], [Emisor]),
+    ([2 o 3], [Sensores: temperatura (obligatorio), humedad (obligatorio) y pH (opcional)], [Sondas], [Emisor]),
+  ),
+)
+
+#nota[Sensores definitivos][
+  La carcasa deja *tres puertos PG7 independientes* para las sondas de temperatura, humedad y pH opcional. Una vez confirmados los modelos exactos de sensores en la Fase 5, aquí se incorporará la tabla definitiva de pines por color de cable.
 ]
 
-#callout(
-  kind: "info",
-  title: "Nota sobre sensores (actualizable en Fase 5)",
+== Vista general del Nodo Emisor
+
+La @fig:emisor-exp muestra el orden exacto de apilado de las cinco piezas impresas en 3D, la placa TTGO LoRa32 V2.1, la antena de 433 MHz y la bandeja modular inferior.
+
+#clean-figure(
+  caption: [Despiece completo del Nodo Emisor de intemperie con empaque TPU, visor OLED, tapón opcional de pH y bahía modular.],
 )[
-  La carcasa reserva *3 puertos PG7 independientes* para Temperatura, Humedad y pH opcional. Cuando confirmes los modelos exactos de tus sensores, añadiremos aquí la tabla de pines por color de cable y el diagrama eléctrico exacto.
-]
+  #image("assets/emisor_explosionado.png", width: 88%)
+]<fig:emisor-exp>
 
-== Vista explosionada — Nodo Emisor (Intemperie)
+== Montaje del Nodo Emisor
 
-Observa cómo encajan las 5 piezas impresas, la placa TTGO LoRa32 V2.1, la antena 433 MHz y la bandeja modular inferior (lista hoy para bornera 5 V y preparada a futuro para celda 18650).
-
-#card-block[
-  #align(center)[
-    #image("assets/emisor_explosionado.png", width: 88%)
-    #v(2pt)
-    #text(font: "Inter", size: 8pt, fill: ink-muted)[*Figura 1.* Vista explosionada del Nodo Emisor CompostIOT con empaque TPU, visor OLED, tapón opcional de pH y bahía modular.]
-  ]
-]
-
-== Ensamble paso a paso — Nodo Emisor
-
-#lego-step(
+#assembly-step(
   num: 1,
-  title: "Instalar prensaestopas en la cara inferior",
+  title: "Instalar los prensaestopas en el borde inferior",
   parts: ("1× Emisor_Base", "1× PG9 (5 V)", "2× PG7 (Temp/Hum)", "1× PG7 o Emisor_Tapon_pH"),
-  tools: "Llave fija o mano firme",
-  check: "Los 4 puertos quedan apuntando hacia el suelo y sus contratuercas internas firmes.",
+  tool: "Llave fija o ajuste manual",
+  check: "Los cuatro puertos miran hacia abajo y sus contratuercas internas quedan firmes.",
 )[
-  Coloca `Emisor_Base` con los 4 agujeros mirando hacia ti e inserta de izquierda a derecha: (1) *PG9* para alimentación 5 V; (2) *PG7* para Temperatura; (3) *PG7* para Humedad; (4) *PG7* para pH o, si no usas pH, presiona el tapón `Emisor_Tapon_pH` con una gota de silicona neutra.
+  Ubica `Emisor_Base` con los cuatro orificios mirando hacia ti e instala de izquierda a derecha: el *PG9* de mayor diámetro para el cable de 5 V, el primer *PG7* para la sonda de temperatura y el segundo *PG7* para la sonda de humedad. En el cuarto orificio monta el tercer *PG7* si vas a medir pH; de lo contrario, inserta a presión el tapón `Emisor_Tapon_pH` con un sello fino de silicona neutra.
 ]
 
-#lego-step(
+#assembly-step(
   num: 2,
-  title: "Fijar la bandeja modular inferior (5 V hoy / 18650 futuro)",
+  title: "Fijar la bandeja modular inferior",
   parts: ("1× Emisor_Soporte_18650", "2× Tornillos M3×8 mm"),
-  tools: "Destornillador / Allen",
-  check: "La bandeja queda nivelada sobre los dos postes inferiores sin tocar los prensaestopas.",
+  tool: "Destornillador o llave Allen",
+  check: "La bandeja reposa nivelada sobre los dos postes inferiores sin tocar los prensaestopas.",
 )[
-  Alinea los dos agujeros de `Emisor_Soporte_18650` sobre los postes internos inferiores de `Emisor_Base` y atornilla con M3×8 mm. #sidenote[Esta misma bandeja aloja hoy la bornera de 5 V y permite migrar luego a portapilas 1×18650 sin reimprimir.]
+  Alinea las dos perforaciones de `Emisor_Soporte_18650` sobre los postes internos de la zona inferior de `Emisor_Base` y sujétala con los tornillos M3×8 mm. Esta bandeja aloja hoy la bornera de distribución de 5 V y permite migrar en el futuro a un portapilas 1×18650 sin modificar la carcasa.
 ]
 
-#lego-step(
+#assembly-step(
   num: 3,
-  title: "Montar la placa LILYGO TTGO LoRa32 V2.1 y su antena",
+  title: "Fijar la placa TTGO LoRa32 V2.1 y conectar la antena",
   parts: ("1× TTGO LoRa32 V2.1", "1× Antena SMA 433 MHz", "4× Tornillos M2×6 mm"),
-  tools: "Destornillador pequeño",
-  check: "La pantalla OLED mira hacia arriba y la antena sale vertical por el collarín superior.",
+  tool: "Destornillador de precisión",
+  check: "La pantalla OLED queda orientada al frente y la antena sobresale recta por el collarín superior.",
 )[
-  Apoya la TTGO LoRa32 V2.1 sobre los 4 postes altos superiores y entre los rieles guía. Fíjala con los 4 tornillos M2 sin apretar de más. Enrosca la antena *433 MHz* a través del collarín superior antigoteo.
+  Asienta la placa TTGO LoRa32 V2.1 sobre los cuatro postes elevados superiores y entre los rieles guía laterales. Asegúrala suavemente con los tornillos M2×6 mm y enrosca la antena de *433 MHz* atravesando el collarín superior antigoteo.
 ]
 
-#callout(
-  kind: "warning",
-  title: "¡Nunca energices la placa LoRa sin la antena conectada!",
-)[
-  Transmitir con el chip SX1278 (433 MHz) sin la antena enroscada puede dañar el amplificador de radiofrecuencia. Confirma siempre la antena antes de aplicar 5 V.
+#v(14pt)
+#precaucion[Nunca energices sin antena][
+  Encender o transmitir con el módulo LoRa SX1278 (433 MHz) sin la antena conectada puede dañar de forma irreversible su etapa de salida de radiofrecuencia. Comprueba la antena antes de aplicar alimentación de 5 V.
 ]
 
-#lego-step(
+#assembly-step(
   num: 4,
-  title: "Pasar cables, conectar sensores y sellar prensaestopas",
-  parts: ("Cable 5 V", "Sondas de Temperatura, Humedad y (opcional) pH"),
-  tools: "Pelacables y perillero",
-  check: "Al halar suavemente cada cable hacia afuera, el prensaestopas lo retiene firmemente.",
+  title: "Pasar cables, conectar sondas y ajustar sellos",
+  parts: ("Cable de 5 V", "Sondas de temperatura, humedad y pH opcional"),
+  tool: "Pelacables y perillero",
+  check: "Ningún cable se desliza al halarlo suavemente desde el exterior.",
 )[
-  Introduce cada cable desde abajo dejando 5 cm de holgura interna, realiza las conexiones al PCB/bornera y aprieta la tuerca exterior de cada prensaestopas hasta comprimir el sello interno de goma.
+  Introduce cada cable desde la parte inferior dejando unos 5 cm de holgura interna para mantenimiento. Realiza las conexiones en la bornera y en los pines definidos en el firmware, y aprieta la tuerca externa de cada prensaestopas hasta comprimir el anillo de caucho alrededor de la chaqueta del cable.
 ]
 
-#lego-step(
+#assembly-step(
   num: 5,
-  title: "Sellar la ventana acrílica en la tapa frontal",
+  title: "Pegar la ventana transparente en la tapa frontal",
   parts: ("1× Emisor_Tapa", "1× Acrílico 33.5×21.5×2 mm", "Silicona neutra"),
-  tools: "Aplicador limpio",
-  check: "El acrílico queda al ras dentro del rebaje trasero de la tapa, limpio frente al OLED.",
+  tool: "Aplicador limpio",
+  check: "La lámina queda al ras dentro del rebaje trasero y la zona del OLED permanece limpia.",
 )[
-  Voltea `Emisor_Tapa` boca abajo, aplica un hilo fino de silicona neutra en el escalón interno alrededor de la ventana OLED, presiona la lámina acrílica y deja curar 30 minutos.
+  Coloca `Emisor_Tapa` boca abajo, aplica un cordón delgado y continuo de silicona neutra sobre el rebaje interno alrededor de la ventana OLED, asienta la lámina acrílica y deja curar durante 30 minutos antes de cerrar la caja.
 ]
 
-#lego-step(
+#assembly-step(
   num: 6,
-  title: "Colocar el empaque TPU y cerrar con 4 tornillos M3",
-  parts: ("1× Emisor_Empaque_TPU", "1× Emisor_Tapa", "4× M3×16 mm inox"),
-  tools: "Llave Allen",
-  check: "La visera queda en el borde superior (lado antena) y el empaque bien asentado en su canal.",
+  title: "Asentar el empaque TPU y cerrar la carcasa",
+  parts: ("1× Emisor_Empaque_TPU", "1× Emisor_Tapa", "4× Tornillos M3×16 mm"),
+  tool: "Llave Allen M3",
+  check: "La visera queda arriba junto a la antena y el empaque se comprime parejo en todo el perímetro.",
 )[
-  Encaja `Emisor_Empaque_TPU` en la ranura perimetral de `Emisor_Base`, coloca `Emisor_Tapa` con la visera hacia arriba y aprieta los 4 tornillos M3 en cruz (X).
-  #v(5pt)
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 8pt,
-    align: center,
-    [#image("assets/emisor_tapa_top.png", width: 98%)],
-    [#image("assets/emisor_ensamblado.png", width: 98%)],
-  )
-]
+  Presiona `Emisor_Empaque_TPU` dentro de la ranura perimetral de `Emisor_Base`. Presenta `Emisor_Tapa` con la visera orientada hacia la antena y aprieta los cuatro tornillos M3×16 mm en orden cruzado para obtener un sellado uniforme contra lluvia y vapor.
 
-#lego-step(
-  num: 7,
-  title: "Fijar en estaca junto a la pila de compostaje",
-  parts: ("Nodo Emisor cerrado", "2× Amarres plásticos o 4× tornillos M5", "Estaca o tubo PVC"),
-  tools: "Alicate de corte",
-  check: "Caja vertical, antena al cielo y cables formando curva de goteo (U) hacia abajo.",
-)[
-  Sujeta el Nodo Emisor a una estaca firme a 40–60 cm del suelo usando las orejas laterales. Forma una *curva de goteo* en todos los cables antes de entrar a los prensaestopas para impedir que el agua escurra hacia la caja.
-]
-
-== Ensamble del Nodo Receptor (Gateway de Aula)
-
-El segundo TTGO LoRa32 V2.1 recibe los datos de campo a 433 MHz y los envía al backend por WiFi o por cable USB hacia `localhost`.
-
-#card-block[
-  #align(center)[
-    #image("assets/receptor_explosionado.png", width: 82%)
-    #v(2pt)
-    #text(font: "Inter", size: 8pt, fill: ink-muted)[*Figura 2.* Vista explosionada del Nodo Receptor / Gateway con acceso Micro-USB/microSD y grabado SENA.]
+  #clean-figure(
+    caption: [Vista frontal con el grabado institucional en bajo relieve y vista isométrica del Nodo Emisor cerrado.],
+  )[
+    #grid(
+      columns: (1fr, 1fr),
+      column-gutter: 10pt,
+      [#image("assets/emisor_tapa_top.png", width: 100%)],
+      [#image("assets/emisor_ensamblado.png", width: 100%)],
+    )
   ]
 ]
 
-#lego-step(
-  num: 8,
-  title: "Armar y cerrar el Nodo Receptor / Gateway",
-  parts: ("1× Receptor_Base", "1× Receptor_Tapa", "1× TTGO LoRa32 V2.1", "1× Antena 433 MHz", "4× M3×12 mm"),
-  tools: "Destornillador",
-  check: "Puerto Micro-USB accesible por el costado derecho y pantalla OLED visible en la ventana superior.",
+#assembly-step(
+  num: 7,
+  title: "Instalar en estaca junto a la pila de compostaje",
+  parts: ("Nodo Emisor sellado", "2× Amarres plásticos o 4× M5", "Estaca o tubo PVC"),
+  tool: "Alicate de corte",
+  check: "Antena apuntando al cielo, tapa vertical y cables con curva de goteo hacia el suelo.",
 )[
-  Apoya la placa TTGO en los 4 postes internos de `Receptor_Base` con el puerto Micro-USB hacia el lado derecho, enrosca la antena 433 MHz, encaja `Receptor_Tapa` y asegura las 4 esquinas con M3×12 mm. Conecta Micro-USB a 5 V (WiFi) o al PC del laboratorio (`localhost`).
-  #v(5pt)
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 8pt,
-    align: center,
-    [#image("assets/receptor_tapa_top.png", width: 98%)],
-    [#image("assets/receptor_ensamblado.png", width: 98%)],
-  )
+  Sujeta el Nodo Emisor a una estaca firme a 40 o 60 cm sobre el suelo usando las orejas laterales. Antes de entrar a los prensaestopas, deja una *curva de goteo en U* en todos los cables para que el agua de lluvia escurra hacia el suelo y nunca hacia la caja.
+
+  #clean-figure(
+    caption: [Orientación vertical obligatoria en campo y curva de goteo en los cables inferiores.],
+  )[
+    #box(width: 240pt, height: 112pt)[
+      // Estaca vertical
+      #place(left + top, dx: 42pt, dy: 8pt, rect(width: 10pt, height: 98pt, fill: rgb("#E2E8F0"), stroke: 0.7pt + ink-soft))
+      // Antena apuntando al cielo
+      #place(left + top, dx: 96pt, dy: 2pt, rect(width: 5pt, height: 24pt, fill: ink, radius: 1pt))
+      #place(left + top, dx: 110pt, dy: 6pt, text(font: "Inter", size: 7.5pt, fill: ink)[Antena 433 MHz arriba])
+      // Carcasa emisor
+      #place(left + top, dx: 52pt, dy: 26pt, rect(width: 68pt, height: 46pt, fill: rgb("#EDF4F0"), stroke: 1pt + accent, radius: 3pt))
+      #place(left + top, dx: 63pt, dy: 34pt, rect(width: 26pt, height: 13pt, fill: rgb("#1E3A5F"), radius: 1pt))
+      #place(left + top, dx: 62pt, dy: 53pt, text(font: "Inter", size: 6.5pt, weight: "bold", fill: accent)[Nodo Emisor])
+      // Curva de goteo (cables saliendo por debajo y bajando antes de subir a la pila)
+      #place(left + top, dx: 70pt, dy: 72pt, line(start: (0pt, 0pt), end: (0pt, 22pt), stroke: 1pt + ink))
+      #place(left + top, dx: 70pt, dy: 94pt, line(start: (0pt, 0pt), end: (26pt, 0pt), stroke: 1pt + ink))
+      #place(left + top, dx: 96pt, dy: 94pt, line(start: (0pt, 0pt), end: (44pt, -16pt), stroke: 1pt + ink))
+      #place(left + top, dx: 70pt, dy: 99pt, text(font: "Inter", size: 7pt, fill: accent)[Curva de goteo (agua cae aquí)])
+      #place(left + top, dx: 145pt, dy: 72pt, text(font: "Inter", size: 7.5pt, fill: ink)[Hacia sondas en la pila])
+    ]
+  ]
 ]
 
-== Checklist rápido pre-despliegue
+== Montaje del Nodo Receptor (Gateway)
 
-#card-block[
-  #set text(font: "Inter", size: 9pt)
-  - $square$ Ambas antenas de *433 MHz* están enroscadas antes de energizar.
-  - $square$ Las pantallas OLED muestran temperatura, humedad y señal LoRa (`RSSI`).
-  - $square$ El Emisor está vertical con prensaestopas abajo y tapón puesto si no hay sonda de pH.
-  - $square$ El Receptor reporta lecturas válidas visibles en el tablero de CompostIOT.
+El segundo módulo TTGO LoRa32 V2.1 opera bajo techo (aula, oficina o laboratorio), recibe las tramas de 433 MHz y las envía al servidor por WiFi o por cable USB hacia `localhost`.
+
+#clean-figure(
+  caption: [Despiece del Nodo Receptor con ranura lateral Micro-USB/microSD y ventilación inferior.],
+)[
+  #image("assets/receptor_explosionado.png", width: 80%)
 ]
+
+#assembly-step(
+  num: 8,
+  title: "Ensamblar y cerrar el Nodo Receptor",
+  parts: ("1× Receptor_Base", "1× Receptor_Tapa", "1× TTGO LoRa32 V2.1", "1× Antena 433 MHz", "4× M3×12 mm"),
+  tool: "Destornillador M3",
+  check: "El puerto Micro-USB queda alineado en el costado derecho y la pantalla OLED visible arriba.",
+)[
+  Apoya la segunda placa TTGO LoRa32 V2.1 sobre los cuatro postes internos de `Receptor_Base` con el puerto Micro-USB orientado hacia la apertura derecha. Enrosca la antena de 433 MHz por el collarín superior, encaja `Receptor_Tapa` y asegura las cuatro esquinas con los tornillos M3×12 mm.
+
+  #clean-figure(
+    caption: [Vista superior e isométrica del Nodo Receptor listo para escritorio o montaje en pared.],
+  )[
+    #grid(
+      columns: (1fr, 1fr),
+      column-gutter: 10pt,
+      [#image("assets/receptor_tapa_top.png", width: 100%)],
+      [#image("assets/receptor_ensamblado.png", width: 100%)],
+    )
+  ]
+]
+
+== Verificación previa a la puesta en marcha
+
+Antes de dejar el prototipo operando junto a la pila, confirma los cuatro puntos de control:
+
+- $square$ Ambas antenas de 433 MHz están firmemente enroscadas antes de energizar las placas.
+- $square$ Las pantallas OLED muestran temperatura, humedad y nivel de señal LoRa (`RSSI`).
+- $square$ El Nodo Emisor está vertical, con los prensaestopas hacia abajo, curva de goteo formada y tapón puesto si no se usa sonda de pH.
+- $square$ El Nodo Receptor entrega lecturas visibles en el tablero de CompostIOT.
