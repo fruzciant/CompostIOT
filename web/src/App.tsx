@@ -34,6 +34,7 @@ import {
   getServers,
   logout,
   restoreSession,
+  subscribeLiveEvents,
   updatePile,
 } from './services/client'
 import { LoginView } from './components/LoginView'
@@ -133,10 +134,19 @@ export function App() {
   useEffect(() => {
     if (!session) return
     void loadPiles(false)
+
+    // Tiempo real instantáneo (SSE) en Web y Móvil + respaldo periódico para Wails/reconexión
+    const unsubscribe = subscribeLiveEvents(session.server, () => {
+      void loadPiles(true)
+    })
     const timer = window.setInterval(() => {
       void loadPiles(true)
-    }, 30_000)
-    return () => window.clearInterval(timer)
+    }, 15_000)
+
+    return () => {
+      unsubscribe()
+      window.clearInterval(timer)
+    }
   }, [session?.server.id, loadPiles])
 
   const filteredPiles = useMemo(

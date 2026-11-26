@@ -1,0 +1,43 @@
+services:
+  compostiot:
+    build:
+      context: ..
+      dockerfile: deploy/Containerfile
+    image: compostiot:latest
+    container_name: compostiot-server
+    restart: unless-stopped
+    ports:
+      - "${COMPOST_PORT:-8080}:8080"
+    environment:
+      COMPOST_PORT: "8080"
+      COMPOST_DB_PATH: "/data/compostiot.db"
+      COMPOST_WEB_DIR: "/app/web-dist"
+      COMPOST_JWT_SECRET: "${COMPOST_JWT_SECRET:-cambia-esta-clave-en-produccion}"
+      COMPOST_SERVER_NAME: "${COMPOST_SERVER_NAME:-CompostIOT Nube SENA}"
+      COMPOST_SEED_DEMO: "${COMPOST_SEED_DEMO:-false}"
+    volumes:
+      - compostiot_data:/data
+
+  # Activar solo en servidor público con dominio propio para HTTPS automático:
+  #   docker compose --profile https up -d
+  caddy:
+    image: caddy:2-alpine
+    container_name: compostiot-caddy
+    profiles: ["https"]
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      COMPOST_DOMAIN: "${COMPOST_DOMAIN:-compost.ejemplo.edu.co}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - compostiot
+
+volumes:
+  compostiot_data:
+  caddy_data:
+  caddy_config:

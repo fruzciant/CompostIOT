@@ -4,7 +4,7 @@
   "outputfilename": "CompostIOT",
   "frontend:dir": "../web",
   "frontend:install": "pnpm install",
-  "frontend:build": "pnpm build && rm -rf ../desktop/frontend/dist && mkdir -p ../desktop/frontend && cp -r dist ../desktop/frontend/dist",
+  "frontend:build": "pnpm build && node -e \"const fs=require('fs'); fs.rmSync('../desktop/frontend/dist',{recursive:true,force:true}); fs.cpSync('dist','../desktop/frontend/dist',{recursive:true});\"",
   "frontend:dev:watcher": "pnpm dev",
   "frontend:dev:serverUrl": "auto",
   "author": {

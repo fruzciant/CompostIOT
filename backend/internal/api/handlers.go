@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -16,19 +18,21 @@ import (
 	"github.com/compostiot/backend/internal/db"
 )
 
-const ServiceVersion = "1.0.0"
+const ServiceVersion = "1.1.0"
 
 type Server struct {
-	cfg   config.Config
-	store *db.Store
-	mux   *http.ServeMux
+	cfg    config.Config
+	store  *db.Store
+	mux    *http.ServeMux
+	broker *eventBroker
 }
 
 func NewServer(cfg config.Config, store *db.Store) *Server {
 	s := &Server{
-		cfg:   cfg,
-		store: store,
-		mux:   http.NewServeMux(),
+		cfg:    cfg,
+		store:  store,
+		mux:    http.NewServeMux(),
+		broker: newEventBroker(),
 	}
 	s.registerRoutes()
 	return s
@@ -73,8 +77,31 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("POST /api/v1/devices", s.requireAdmin(s.handleCreateDevice))
 	s.mux.HandleFunc("DELETE /api/v1/devices/{id}", s.requireAdmin(s.handleDeleteDevice))
 
-	// Sincronización offline (Wails y Móvil)
+	// Sincronización offline (Wails y Móvil) y flujo en tiempo real (SSE)
 	s.mux.HandleFunc("GET /api/v1/sync/snapshot", s.requireAuth(s.handleSyncSnapshot))
+	s.mux.HandleFunc("GET /api/v1/events", s.handleEvents)
+
+	// Servir interfaz web compilada (modo todo-en-uno para Localhost y Nube)
+	if s.cfg.WebDir != "" {
+		s.mux.Handle("/", s.spaHandler(s.cfg.WebDir))
+	}
+}
+
+func (s *Server) spaHandler(webDir string) http.Handler {
+	fs := http.FileServer(http.Dir(webDir))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			writeError(w, http.StatusNotFound, "NOT_FOUND", "Endpoint no encontrado")
+			return
+		}
+		clean := filepath.Clean(strings.TrimPrefix(r.URL.Path, "/"))
+		target := filepath.Join(webDir, clean)
+		if info, err := os.Stat(target); err == nil && !info.IsDir() {
+			fs.ServeHTTP(w, r)
+			return
+		}
+		http.ServeFile(w, r, filepath.Join(webDir, "index.html"))
+	})
 }
 
 // --- DTOs ---
@@ -546,6 +573,7 @@ func (s *Server) handleCreatePile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	enriched, _ := s.enrichPile(p, now)
+	s.broker.publish("pile_changed", map[string]any{"action": "created", "pile_id": id})
 	writeJSON(w, http.StatusCreated, enriched)
 }
 
@@ -868,6 +896,13 @@ func (s *Server) saveReadingForPile(w http.ResponseWriter, p PileDTO, req readin
 		Seq:          req.Seq,
 		RecordedAt:   recStr,
 	}
+
+	s.broker.publish("reading", map[string]any{
+		"pile_id":    p.ID,
+		"node_id":    p.NodeID,
+		"reading":    saved,
+		"evaluation": eval,
+	})
 
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"reading":    saved,

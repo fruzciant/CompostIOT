@@ -1,0 +1,250 @@
+name: CompostIOT CI & Multiplatform Releases
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test-and-docs:
+    name: Pruebas Go/Web y PDFs Typst
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Probar backend Go
+        working-directory: backend
+        run: go test -v ./...
+
+      - name: Probar cliente desktop Go (llavero + SQLite offline)
+        working-directory: desktop
+        run: go test -v ./internal/...
+
+      - name: Compilar frontend Web
+        working-directory: web
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Instalar fuentes y Typst
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-inter fonts-libertinus fonts-dejavu-core
+      - uses: typst-community/setup-typst@v4
+        with:
+          typst-version: "latest"
+
+      - name: Compilar guías y manual LEGO en PDF
+        working-directory: docs-typst
+        run: bash build-all.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compostiot-guias-pdf
+          path: docs-typst/pdf/*.pdf
+
+  build-backend:
+    name: Backend y Puente Serial (${{ matrix.label }})
+    needs: test-and-docs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: linux-amd64
+            goos: linux
+            goarch: amd64
+            ext: ""
+          - label: linux-arm64-rpi
+            goos: linux
+            goarch: arm64
+            ext: ""
+          - label: windows-amd64
+            goos: windows
+            goarch: amd64
+            ext: ".exe"
+          - label: darwin-arm64
+            goos: darwin
+            goarch: arm64
+            ext: ""
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Compilar web/dist para paquete todo-en-uno
+        working-directory: web
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Compilar binarios Go (${{ matrix.label }})
+        working-directory: backend
+        env:
+          CGO_ENABLED: "0"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          mkdir -p out/web-dist
+          cp -r ../web/dist/* out/web-dist/
+          go build -trimpath -ldflags="-s -w" -o "out/compostiot-server${{ matrix.ext }}" ./cmd/server
+          go build -trimpath -ldflags="-s -w" -o "out/compostiot-simulator${{ matrix.ext }}" ./cmd/simulator
+          go build -trimpath -ldflags="-s -w" -o "out/compostiot-bridge${{ matrix.ext }}" ./cmd/serial-bridge
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compostiot-server-${{ matrix.label }}
+          path: backend/out/
+
+  build-desktop-wails:
+    name: Cliente Escritorio Wails (${{ matrix.name }})
+    needs: test-and-docs
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-amd64
+            os: ubuntu-24.04
+            out: desktop/build/bin/CompostIOT
+          - name: windows-amd64
+            os: windows-latest
+            out: desktop/build/bin/CompostIOT.exe
+          - name: macos-arm64
+            os: macos-latest
+            out: desktop/build/bin/CompostIOT.app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Instalar dependencias GTK/WebKit en Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      - name: Compilar frontend web y copiarlo a desktop/frontend/dist
+        shell: bash
+        run: |
+          cd web && pnpm install --frozen-lockfile && pnpm build
+          mkdir -p ../desktop/frontend/dist
+          cp -r dist/* ../desktop/frontend/dist/
+
+      - name: Instalar Wails CLI y compilar aplicación nativa
+        shell: bash
+        working-directory: desktop
+        run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@latest
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            wails build -s -tags webkit2_41
+          else
+            wails build -s
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compostiot-desktop-${{ matrix.name }}
+          path: ${{ matrix.out }}
+
+  build-android-apk:
+    name: App Móvil Android (APK Capacitor)
+    needs: test-and-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Compilar web y sincronizar Capacitor Android
+        run: |
+          cd web && pnpm install --frozen-lockfile && pnpm build
+          cd ../mobile && pnpm install --frozen-lockfile && pnpm exec cap sync android
+
+      - name: Compilar APK Android (assembleDebug)
+        working-directory: mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compostiot-android-apk
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+
+  publish-release:
+    name: Publicar Release en GitHub (tags v*)
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [test-and-docs, build-backend, build-desktop-wails, build-android-apk]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Empaquetar archivos para Release
+        run: |
+          mkdir -p release-files
+          cp release-artifacts/compostiot-guias-pdf/*.pdf release-files/
+          cp release-artifacts/compostiot-android-apk/app-debug.apk release-files/CompostIOT-android.apk
+          for dir in release-artifacts/compostiot-server-* release-artifacts/compostiot-desktop-*; do
+            base=$(basename "$dir")
+            (cd "$dir" && zip -r "../../release-files/${base}.zip" .)
+          done
+          ls -lh release-files/
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release-files/*
+          generate_release_notes: true

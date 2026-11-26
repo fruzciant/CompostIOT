@@ -14,6 +14,7 @@ type Config struct {
 	DBPath     string
 	JWTSecret  string
 	ServerName string
+	WebDir     string
 	TokenTTL   time.Duration
 	SeedDemo   bool
 }
@@ -24,6 +25,7 @@ func Load() Config {
 		DBPath:     envOrDefault("COMPOST_DB_PATH", "./compostiot.db"),
 		JWTSecret:  os.Getenv("COMPOST_JWT_SECRET"),
 		ServerName: envOrDefault("COMPOST_SERVER_NAME", "CompostIOT Localhost (SENA)"),
+		WebDir:     envOrDefault("COMPOST_WEB_DIR", autoDetectWebDir()),
 		TokenTTL:   24 * time.Hour,
 		SeedDemo:   envBool("COMPOST_SEED_DEMO", false),
 	}
@@ -37,6 +39,7 @@ func Load() Config {
 	flag.StringVar(&cfg.Port, "port", cfg.Port, "Puerto HTTP del servidor")
 	flag.StringVar(&cfg.DBPath, "db", cfg.DBPath, "Ruta del archivo SQLite")
 	flag.StringVar(&cfg.ServerName, "server-name", cfg.ServerName, "Nombre visible del servidor")
+	flag.StringVar(&cfg.WebDir, "web-dir", cfg.WebDir, "Carpeta estática del frontend web (web/dist) para servir todo en un solo puerto")
 	flag.BoolVar(&cfg.SeedDemo, "seed-demo", cfg.SeedDemo, "Cargar pilas y lecturas de demostración si la BD está vacía")
 	flag.Parse()
 
@@ -72,4 +75,13 @@ func envBool(key string, fallback bool) bool {
 		return fallback
 	}
 	return b
+}
+
+func autoDetectWebDir() string {
+	for _, candidate := range []string{"./web-dist", "../web/dist"} {
+		if info, err := os.Stat(candidate + "/index.html"); err == nil && !info.IsDir() {
+			return candidate
+		}
+	}
+	return ""
 }

@@ -440,3 +440,42 @@ export async function deleteDevice(server: ServerProfile, deviceId: number): Pro
   if (wails) return wails.DeleteDevice(server.id, deviceId)
   await httpRequest<void>(server, `/api/v1/devices/${deviceId}`, { method: 'DELETE' })
 }
+
+/**
+ * Suscribe a eventos Server-Sent Events (/api/v1/events) para actualizaciones instantáneas
+ * en cuanto llega una lectura desde las placas ESP32 LoRa32 o una medición manual.
+ * Devuelve una función de limpieza para cerrar la conexión.
+ */
+export function subscribeLiveEvents(
+  server: ServerProfile,
+  onEvent: () => void,
+  onStatus?: (connected: boolean) => void,
+): () => void {
+  if (isWailsDesktop() || typeof EventSource === 'undefined') {
+    onStatus?.(false)
+    return () => {}
+  }
+  const token = localStorage.getItem(STORAGE_TOKEN_PREFIX + server.id)
+  if (!token) {
+    onStatus?.(false)
+    return () => {}
+  }
+
+  const url = `${normalizeServerUrl(server.url)}/api/v1/events?token=${encodeURIComponent(token)}`
+  const es = new EventSource(url)
+
+  es.addEventListener('connected', () => {
+    onStatus?.(true)
+  })
+  es.addEventListener('message', () => {
+    onEvent()
+  })
+  es.onerror = () => {
+    onStatus?.(false)
+  }
+
+  return () => {
+    onStatus?.(false)
+    es.close()
+  }
+}

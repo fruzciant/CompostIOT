@@ -1,0 +1,7 @@
+{$COMPOST_DOMAIN} {
+    encode gzip zstd
+    reverse_proxy compostiot:8080 {
+        # Desactivar buffering para que SSE (/api/v1/events) entregue mediciones en tiempo real sin retardo
+        flush_interval -1
+    }
+}

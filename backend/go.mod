@@ -4,6 +4,7 @@ go 1.26.11
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
+	go.bug.st/serial v1.8.0
 	golang.org/x/crypto v0.59.0
 	modernc.org/sqlite v1.63.0
 )
