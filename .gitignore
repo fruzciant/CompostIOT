@@ -1,0 +1,40 @@
+# OS & Editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Go / Backend / Wails
+backend/bin/
+backend/*.db
+backend/*.db-wal
+backend/*.db-shm
+desktop/build/bin/
+desktop/frontend/dist/
+desktop/*.db
+*.exe
+*.test
+
+# Node / Web / Mobile
+node_modules/
+dist/
+build/
+.vite/
+.env
+.env.local
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/app/src/main/assets/public/
+mobile/ios/App/Pods/
+
+# Firmware / PlatformIO
+firmware/**/.pio/
+firmware/**/.vscode/
+
+# CAD temp files
+hardware-cad/**/*.FCBak
+hardware-cad/**/*.FCStd1
+
+# Typst generated PDFs (optional — keep releases if desired, ignore temp)
+docs-typst/**/*.tmp.pdf

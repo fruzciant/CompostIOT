@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/types.ts","./src/components/AdminPanel.tsx","./src/components/GuideView.tsx","./src/components/LoginView.tsx","./src/components/PhaseProgress.tsx","./src/components/PileModal.tsx","./src/components/ReadingsChart.tsx","./src/services/client.ts","./src/utils/format.ts"],"version":"5.9.3"}

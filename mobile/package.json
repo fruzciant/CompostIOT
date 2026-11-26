@@ -1,0 +1,23 @@
+{
+  "name": "compostiot-mobile",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Aplicación móvil CompostIOT (Android/iOS, teléfono y tablet) usando Capacitor sobre el frontend web.",
+  "scripts": {
+    "build:web": "pnpm --dir ../web build",
+    "sync": "pnpm run build:web && cap sync",
+    "sync:android": "pnpm run build:web && cap sync android",
+    "sync:ios": "pnpm run build:web && cap sync ios",
+    "open:android": "cap open android",
+    "open:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/core": "^7.2.0",
+    "@capacitor/ios": "^7.2.0",
+    "@capacitor/status-bar": "^7.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.2.0"
+  }
+}

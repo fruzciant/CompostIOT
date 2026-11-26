@@ -1,0 +1,18 @@
+{
+  "name": "CompostIOT — Monitoreo de Compostaje SENA",
+  "short_name": "CompostIOT",
+  "description": "Monitoreo en tiempo real de temperatura, humedad, pH y fases del compostaje.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F8FAF9",
+  "theme_color": "#15613B",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

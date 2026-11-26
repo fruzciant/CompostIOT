@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "CompostIOT",
+  "outputfilename": "CompostIOT",
+  "frontend:dir": "../web",
+  "frontend:install": "pnpm install",
+  "frontend:build": "pnpm build && rm -rf ../desktop/frontend/dist && mkdir -p ../desktop/frontend && cp -r dist ../desktop/frontend/dist",
+  "frontend:dev:watcher": "pnpm dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "CompostIOT SENA"
+  }
+}
