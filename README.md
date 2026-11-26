@@ -27,3 +27,13 @@ CompostIOT/
 - [Contrato de API REST](specs/api-contract.md)
 - [Modelo de Fases del Compostaje y Alertas](specs/composting-phases.md)
 - [Protocolo LoRa 433 MHz y Hardware](specs/lora-protocol.md)
+
+## Documentación y Guías (Typst)
+
+- [Manual Visual de Ensamble estilo LEGO (PDF)](docs-typst/pdf/01_manual_ensamble_lego.pdf)
+- [Guía de Aprendizaje SENA (PDF)](docs-typst/pdf/02_guia_aprendizaje_sena.pdf)
+- [Guía de Plataforma: Backend, Web, Wails y Móvil (PDF)](docs-typst/pdf/03_guia_plataforma_software.pdf)
+
+## Licencia
+
+Distribuido bajo licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
